@@ -2,10 +2,11 @@ const express = require('express');
 const dotenv = require('dotenv');
 const morgan = require('morgan');
 
-dotenv.config({ path: 'config.env' });
+dotenv.config({ path: '.env' });
 const dbConnection = require('./config/db');
 const categoryRoute = require('./routes/categoryRoute');
-
+const ErrorHandler = require("./middleware/ErrorHandler")
+const ApiError = require("./utils/ApiError")
 // Connect with db
 dbConnection();
 
@@ -24,15 +25,22 @@ if (process.env.NODE_ENV === 'development') {
 app.use('/api/v1/categories', categoryRoute);
 
 app.all("*", (req, res, next) => {
-  const err = new Error(`can't find this route ${req.originalUrl}`)
+  const err = new ApiError(`Can't Find This route ${req.originalUrl}`, 400)
   next(err)
 })
 
-app.use((err, req, res, next) => {
-  res.status(400).json({ err: err.message })
-})
+app.use(ErrorHandler)
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`App running running on port ${PORT}`);
 });
+
+
+process.on("unhandledRejection", (err) => {
+  console.error(`...unhandledRejection .. ${err.name}-${err.message}`)
+  server.close(() => {
+    console.log("Shutting down")
+    process.exit(1)
+  })
+})
