@@ -21,7 +21,7 @@ exports.deleteSubcategoryValidator = [
 ]
 exports.updatedSubcategoryValidator = [
     check("id").notEmpty().isMongoId().withMessage("id is not valid"),
-    check("name").notEmpty().withMessage("name can not be empty").isLength({ min: 2 })
+    check("name").optional().notEmpty().withMessage("name can not be empty").isLength({ min: 2 })
         .withMessage("Too short name must be more than 2 char ").isLength({ max: 32 })
         .withMessage("too long name must be less than 32"),
     check("category").isMongoId().withMessage("Not valid monogo id"),
